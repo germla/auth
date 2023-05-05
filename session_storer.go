@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"net/http"
 
+	"github.com/germla/auth/claims"
 	jwt "github.com/golang-jwt/jwt/v4"
-	"github.com/qor/auth/claims"
 	"github.com/qor/session"
 )
 

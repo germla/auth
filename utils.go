@@ -4,7 +4,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/qor/auth/claims"
+	"github.com/germla/auth/claims"
 	"github.com/qor/qor/utils"
 	"github.com/uptrace/bun"
 )

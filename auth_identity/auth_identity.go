@@ -3,7 +3,7 @@ package auth_identity
 import (
 	"time"
 
-	"github.com/qor/auth/claims"
+	"github.com/germla/auth/claims"
 	"github.com/uptrace/bun"
 )
 

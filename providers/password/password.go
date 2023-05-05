@@ -6,11 +6,11 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/qor/auth"
-	"github.com/qor/auth/auth_identity"
-	"github.com/qor/auth/claims"
-	"github.com/qor/auth/providers/password/encryptor"
-	"github.com/qor/auth/providers/password/encryptor/bcrypt_encryptor"
+	"github.com/germla/auth"
+	"github.com/germla/auth/auth_identity"
+	"github.com/germla/auth/claims"
+	"github.com/germla/auth/providers/password/encryptor"
+	"github.com/germla/auth/providers/password/encryptor/bcrypt_encryptor"
 	"github.com/qor/session"
 )
 
@@ -84,10 +84,10 @@ func (Provider) GetName() string {
 
 // ConfigAuth config auth
 func (provider Provider) ConfigAuth(auth *auth.Auth) {
-	auth.Render.RegisterViewPath("github.com/qor/auth/providers/password/views")
+	auth.Render.RegisterViewPath("github.com/germla/auth/providers/password/views")
 
 	if auth.Mailer != nil {
-		auth.Mailer.RegisterViewPath("github.com/qor/auth/providers/password/views/mailers")
+		auth.Mailer.RegisterViewPath("github.com/germla/auth/providers/password/views/mailers")
 	}
 }
 
