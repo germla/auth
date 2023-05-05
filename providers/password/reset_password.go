@@ -1,6 +1,7 @@
 package password
 
 import (
+	ctx "context"
 	"net/mail"
 	"path"
 	"reflect"
@@ -104,8 +105,8 @@ var DefaultResetPasswordHandler = func(context *auth.Context) error {
 			authInfo.UID = claims.Id
 			authIdentity := reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 
-			if tx.Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).First(authIdentity).RecordNotFound() {
-				return auth.ErrInvalidAccount
+			if err := tx.NewSelect().Model(authIdentity).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(ctx.Background(), authIdentity); err != nil {
+				err = auth.ErrInvalidAccount
 			}
 
 			if authInfo.EncryptedPassword, err = provider.Encryptor.Digest(strings.TrimSpace(context.Request.Form.Get("new_password"))); err == nil {
@@ -114,7 +115,12 @@ var DefaultResetPasswordHandler = func(context *auth.Context) error {
 					now := time.Now()
 					authInfo.ConfirmedAt = &now
 				}
-				err = tx.Model(authIdentity).Update(authInfo).Error
+
+				_, err = tx.NewUpdate().
+					Model(authIdentity).
+					Set("encrypted_password", authInfo.EncryptedPassword).
+					Set("confirmed_at", authInfo.ConfirmedAt).
+					Exec(ctx.Background())
 			}
 		}
 	}

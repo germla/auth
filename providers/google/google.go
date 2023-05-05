@@ -1,6 +1,7 @@
 package google
 
 import (
+	ctx "context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -116,7 +117,7 @@ func New(config *Config) *GoogleProvider {
 				authInfo.Provider = provider.GetName()
 				authInfo.UID = schema.UID
 
-				if !tx.Model(authIdentity).Where(authInfo).Scan(&authInfo).RecordNotFound() {
+				if tx.NewSelect().Model(authIdentity).Where("provider = ? AND uid = ?", provider.GetName(), schema.UID).Scan(ctx.Background(), &authInfo); err == nil {
 					return authInfo.ToClaims(), nil
 				}
 
@@ -128,9 +129,15 @@ func New(config *Config) *GoogleProvider {
 					return nil, err
 				}
 
-				if err = tx.Where(authInfo).FirstOrCreate(authIdentity).Error; err == nil {
-					return authInfo.ToClaims(), nil
+				if err := tx.NewSelect().Model(authIdentity).Where("provider = ? AND uid = ?", provider.GetName(), schema.UID).Scan(ctx.Background(), &authInfo); err == nil {
+					// Create a new user
+					if _, err := tx.NewInsert().Model(authIdentity).Set("provider", provider.GetName()).Set("uid", schema.UID).Exec(ctx.Background()); err == nil {
+						return authInfo.ToClaims(), nil
+					}
 				}
+
+				// Convert above from GORM to Bun
+
 			}
 
 			return nil, err

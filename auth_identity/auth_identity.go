@@ -3,21 +3,21 @@ package auth_identity
 import (
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qor/auth/claims"
+	"github.com/uptrace/bun"
 )
 
 // AuthIdentity auth identity session model
 type AuthIdentity struct {
-	gorm.Model
+	bun.BaseModel
 	Basic
 	SignLogs
 }
 
 // Basic basic information about auth identity
 type Basic struct {
-	Provider          string // phone, email, wechat, github...
-	UID               string `gorm:"column:uid"`
+	Provider          string
+	UID               string `bun:"uid"`
 	EncryptedPassword string
 	UserID            string
 	ConfirmedAt       *time.Time

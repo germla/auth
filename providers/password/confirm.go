@@ -1,6 +1,7 @@
 package password
 
 import (
+	ctx "context"
 	"errors"
 	"html/template"
 	"net/mail"
@@ -78,7 +79,7 @@ var DefaultConfirmHandler = func(context *auth.Context) error {
 			authInfo.UID = claims.Id
 			authIdentity := reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
 
-			if tx.Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).First(authIdentity).RecordNotFound() {
+			if err := tx.NewSelect().Model(authIdentity).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(ctx.Background(), authIdentity); err != nil {
 				err = auth.ErrInvalidAccount
 			}
 
@@ -86,7 +87,7 @@ var DefaultConfirmHandler = func(context *auth.Context) error {
 				if authInfo.ConfirmedAt == nil {
 					now := time.Now()
 					authInfo.ConfirmedAt = &now
-					if err = tx.Model(authIdentity).Update(authInfo).Error; err == nil {
+					if _, err = tx.NewUpdate().Model(authIdentity).Set("confirmed_at", authInfo.ConfirmedAt).Exec(ctx.Background()); err == nil {
 						context.SessionStorer.Flash(context.Writer, context.Request, session.Message{Message: ConfirmedAccountFlashMessage, Type: "success"})
 						context.Auth.Redirector.Redirect(context.Writer, context.Request, "confirm")
 						return nil

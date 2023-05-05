@@ -4,9 +4,9 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/jinzhu/gorm"
 	"github.com/qor/auth/claims"
 	"github.com/qor/qor/utils"
+	"github.com/uptrace/bun"
 )
 
 // CurrentUser context key to get current user from Request
@@ -30,9 +30,9 @@ func (auth *Auth) GetCurrentUser(req *http.Request) interface{} {
 }
 
 // GetDB get db from request
-func (auth *Auth) GetDB(request *http.Request) *gorm.DB {
+func (auth *Auth) GetDB(request *http.Request) *bun.DB {
 	db := request.Context().Value(utils.ContextDBName)
-	if tx, ok := db.(*gorm.DB); ok {
+	if tx, ok := db.(*bun.DB); ok {
 		return tx
 	}
 	return auth.Config.DB

@@ -1,6 +1,7 @@
 package password
 
 import (
+	ctx "context"
 	"html/template"
 	"net/http"
 	"strings"
@@ -136,7 +137,8 @@ func (provider Provider) ServeHTTP(context *auth.Context) {
 
 					authInfo.Provider = provider.GetName()
 					authInfo.UID = strings.TrimSpace(req.Form.Get("email"))
-					if tx.Model(context.Auth.AuthIdentityModel).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(&authInfo).RecordNotFound() {
+
+					if err := tx.NewSelect().Model(context.Auth.Config.AuthIdentityModel).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(ctx.Background(), &authInfo); err != nil {
 						err = auth.ErrInvalidAccount
 					}
 

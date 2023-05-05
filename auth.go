@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	jwt "github.com/golang-jwt/jwt/v4"
-	"github.com/jinzhu/gorm"
 	"github.com/qor/auth/auth_identity"
 	"github.com/qor/auth/claims"
 	"github.com/qor/mailer"
@@ -13,6 +12,7 @@ import (
 	"github.com/qor/redirect_back"
 	"github.com/qor/render"
 	"github.com/qor/session/manager"
+	"github.com/uptrace/bun"
 )
 
 // Auth auth struct
@@ -26,7 +26,7 @@ type Auth struct {
 // Config auth config
 type Config struct {
 	// Default Database, which will be used in Auth when do CRUD, you can change a request's DB isntance by setting request Context's value, refer https://github.com/qor/auth/blob/master/utils.go#L32
-	DB *gorm.DB
+	DB *bun.DB
 	// AuthIdentityModel a model used to save auth info, like email/password, OAuth token, linked user's ID, https://github.com/qor/auth/blob/master/auth_identity/auth_identity.go is the default implemention
 	AuthIdentityModel interface{}
 	// UserModel should be point of user struct's instance, it could be nil, then Auth will assume there is no user linked to auth info, and will return current auth info when get current user

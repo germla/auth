@@ -1,6 +1,7 @@
 package password
 
 import (
+	ctx "context"
 	"reflect"
 	"strings"
 
@@ -24,7 +25,7 @@ var DefaultAuthorizeHandler = func(context *auth.Context) (*claims.Claims, error
 	authInfo.Provider = provider.GetName()
 	authInfo.UID = strings.TrimSpace(req.Form.Get("login"))
 
-	if tx.Model(context.Auth.AuthIdentityModel).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(&authInfo).RecordNotFound() {
+	if err := tx.NewSelect().Model(context.Auth.AuthIdentityModel).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(ctx.Background(), &authInfo); err != nil {
 		return nil, auth.ErrInvalidAccount
 	}
 
@@ -66,7 +67,7 @@ var DefaultRegisterHandler = func(context *auth.Context) (*claims.Claims, error)
 	authInfo.Provider = provider.GetName()
 	authInfo.UID = strings.TrimSpace(req.Form.Get("login"))
 
-	if !tx.Model(context.Auth.AuthIdentityModel).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(&authInfo).RecordNotFound() {
+	if tx.NewSelect().Model(context.Auth.UserModel).Where("email = ?", authInfo.UID).Scan(ctx.Background(), &currentUser); currentUser != nil {
 		return nil, auth.ErrInvalidAccount
 	}
 
@@ -83,7 +84,7 @@ var DefaultRegisterHandler = func(context *auth.Context) (*claims.Claims, error)
 
 		// create auth identity
 		authIdentity := reflect.New(utils.ModelType(context.Auth.Config.AuthIdentityModel)).Interface()
-		if err = tx.Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).FirstOrCreate(authIdentity).Error; err == nil {
+		if err := tx.NewSelect().Model(authIdentity).Where("provider = ? AND uid = ?", authInfo.Provider, authInfo.UID).Scan(ctx.Background(), &authInfo); err == nil {
 			if provider.Config.Confirmable {
 				context.SessionStorer.Flash(context.Writer, req, session.Message{Message: ConfirmFlashMessage, Type: "success"})
 				err = provider.Config.ConfirmMailer(schema.Email, context, authInfo.ToClaims(), currentUser)
