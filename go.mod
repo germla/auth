@@ -1,4 +1,4 @@
-module github.com/qor/auth
+module github.com/germla/auth
 
 go 1.13
 
